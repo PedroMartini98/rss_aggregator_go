@@ -1,24 +1,22 @@
 package main
 
+// a
+
 import (
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/PedroMartini98/rss_aggregator_go/config"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/util"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-	"github.com/joho/godotenv"
 )
 
 func main() {
 
-	godotenv.Load()
-
-	portString := os.Getenv("PORT")
-
-	if portString == "" {
-		log.Fatal("Falied to load PORT from enviroment")
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	router := chi.NewRouter()
@@ -42,12 +40,12 @@ func main() {
 
 	srv := &http.Server{
 		Handler: router,
-		Addr:    ":" + portString,
+		Addr:    ":" + cfg.Port,
 	}
 
-	log.Printf("Starting server on port:%v", portString)
+	log.Printf("Starting server on port:%v", cfg.Port)
 
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
