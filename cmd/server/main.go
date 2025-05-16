@@ -1,7 +1,5 @@
 package main
 
-// a
-
 import (
 	"database/sql"
 	"log"
@@ -48,7 +46,7 @@ func main() {
 
 	router.Mount("/v1", v1Router)
 
-	// No need for a handler routes:
+	//Routes that don't need a handler:
 	v1Router.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		response.WithJson(w, http.StatusOK, "Server is up")
 	})
