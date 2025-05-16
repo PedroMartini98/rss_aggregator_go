@@ -3,13 +3,17 @@ package main
 // a
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
 	"github.com/PedroMartini98/rss_aggregator_go/config"
-	"github.com/PedroMartini98/rss_aggregator_go/internal/util"
+	"github.com/PedroMartini98/rss_aggregator_go/internal/api/handler"
+	"github.com/PedroMartini98/rss_aggregator_go/internal/database"
+	"github.com/PedroMartini98/rss_aggregator_go/internal/response"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -18,6 +22,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	db, err := sql.Open("postgres", cfg.DBURL)
+	if err != nil {
+		log.Fatalf("Error trying to setup database: %v", err)
+	}
+	defer db.Close()
+
+	dbQueries := database.New(db)
+
+	userHandler := handler.NewUserHandler(dbQueries)
 
 	router := chi.NewRouter()
 
@@ -34,9 +48,13 @@ func main() {
 
 	router.Mount("/v1", v1Router)
 
+	// No need for a handler routes:
 	v1Router.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		util.RespondWithJson(w, http.StatusOK, "Server is up")
+		response.WithJson(w, http.StatusOK, "Server is up")
 	})
+
+	// User routes:
+	v1Router.Post("/create_user", userHandler.CreateUser)
 
 	srv := &http.Server{
 		Handler: router,
