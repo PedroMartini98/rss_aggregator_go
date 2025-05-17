@@ -53,6 +53,7 @@ func main() {
 
 	// User routes:
 	v1Router.Post("/create_user", userHandler.CreateUser)
+	v1Router.Get("/user", userHandler.GetUser)
 
 	srv := &http.Server{
 		Handler: router,

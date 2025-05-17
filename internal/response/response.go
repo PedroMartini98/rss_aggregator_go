@@ -43,6 +43,7 @@ func AddJsonTagToUserStuct(oldUser database.User) model.User {
 		CreatedAt: oldUser.CreatedAt,
 		UpdatedAt: oldUser.UpdatedAt,
 		Name:      oldUser.Name,
+		ApiKey:    oldUser.ApiKey,
 	}
 
 }

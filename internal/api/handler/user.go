@@ -50,3 +50,22 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	response.WithJson(w, http.StatusCreated, userWithTags)
 
 }
+
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	ApiKey := r.Header.Get("ApiKey")
+	if ApiKey == "" {
+		response.WithError(w, http.StatusForbidden, fmt.Sprintf("failed to get ApiKey"))
+		return
+	}
+
+	user, err := h.dbQueries.GetUserByApiKey(r.Context(), ApiKey)
+	if err != nil {
+		response.WithError(w, http.StatusForbidden, fmt.Sprintf("failed to get user: %v", err))
+		return
+	}
+
+	userWithTags := response.AddJsonTagToUserStuct(user)
+
+	response.WithJson(w, http.StatusOK, userWithTags)
+
+}
