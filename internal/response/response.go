@@ -36,7 +36,7 @@ func WithError(w http.ResponseWriter, code int, err string) {
 	WithJson(w, code, errResponse{Error: err})
 }
 
-func AddJsonTagToUserStuct(oldUser database.User) model.User {
+func AddJsonTagToUser(oldUser database.User) model.User {
 
 	return model.User{
 		ID:        oldUser.ID,

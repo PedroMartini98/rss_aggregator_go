@@ -7,6 +7,7 @@ import (
 
 	"github.com/PedroMartini98/rss_aggregator_go/config"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/api/handler"
+	"github.com/PedroMartini98/rss_aggregator_go/internal/api/middleware"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/database"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/response"
 	"github.com/go-chi/chi"
@@ -30,6 +31,7 @@ func main() {
 	dbQueries := database.New(db)
 
 	userHandler := handler.NewUserHandler(dbQueries)
+	middlewareHandler := middleware.NewMiddlewareHandler(dbQueries)
 
 	router := chi.NewRouter()
 
@@ -53,7 +55,7 @@ func main() {
 
 	// User routes:
 	v1Router.Post("/create_user", userHandler.CreateUser)
-	v1Router.Get("/user", userHandler.GetUser)
+	v1Router.Get("/user", middlewareHandler.Auth(userHandler.GetUser))
 
 	srv := &http.Server{
 		Handler: router,
