@@ -11,17 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserHandler struct {
+type userHandler struct {
 	dbQueries *database.Queries
 }
 
-func NewUserHandler(dbQueries *database.Queries) *UserHandler {
-	return &UserHandler{
+func NewUserHandler(dbQueries *database.Queries) *userHandler {
+	return &userHandler{
 		dbQueries: dbQueries,
 	}
 }
 
-func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	type requestBody struct {
 		Name string `json:"name"`
@@ -51,7 +51,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request, user database.User) {
+func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request, user database.User) {
 	userWithTags := response.AddJsonTagToUser(user)
 
 	response.WithJson(w, http.StatusOK, userWithTags)

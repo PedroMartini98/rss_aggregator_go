@@ -30,9 +30,6 @@ func main() {
 
 	dbQueries := database.New(db)
 
-	userHandler := handler.NewUserHandler(dbQueries)
-	middlewareHandler := middleware.NewMiddlewareHandler(dbQueries)
-
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -48,6 +45,10 @@ func main() {
 
 	router.Mount("/v1", v1Router)
 
+	userHandler := handler.NewUserHandler(dbQueries)
+	feedHandler := handler.NewFeedHandler(dbQueries)
+	middlewareHandler := middleware.NewMiddlewareHandler(dbQueries)
+
 	//Routes that don't need a handler:
 	v1Router.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		response.WithJson(w, http.StatusOK, "Server is up")
@@ -57,6 +58,8 @@ func main() {
 	v1Router.Post("/create_user", userHandler.CreateUser)
 	v1Router.Get("/user", middlewareHandler.Auth(userHandler.GetUser))
 
+	//Feed routes:
+	v1Router.Post("/create_feed", middlewareHandler.Auth(feedHandler.CreateFeed))
 	srv := &http.Server{
 		Handler: router,
 		Addr:    ":" + cfg.Port,

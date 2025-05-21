@@ -47,3 +47,14 @@ func AddJsonTagToUser(oldUser database.User) model.User {
 	}
 
 }
+
+func AddJsonTagToFeed(oldFeed database.Feed) model.Feed {
+	return model.Feed{
+		ID:        oldFeed.ID,
+		CreatedAt: oldFeed.CreatedAt,
+		UpdatedAt: oldFeed.UpdatedAt,
+		Url:       oldFeed.Url,
+		Name:      oldFeed.Name,
+		UserID:    oldFeed.UserID,
+	}
+}
