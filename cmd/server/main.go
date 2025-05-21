@@ -60,6 +60,8 @@ func main() {
 
 	//Feed routes:
 	v1Router.Post("/create_feed", middlewareHandler.Auth(feedHandler.CreateFeed))
+	v1Router.Get("/feeds", feedHandler.GetAllFeeds)
+
 	srv := &http.Server{
 		Handler: router,
 		Addr:    ":" + cfg.Port,

@@ -71,4 +71,6 @@ func (h *feedHandler) GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 		response.WithError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get all feeds: %v", err))
 		return
 	}
+
+	response.WithJson(w, http.StatusOK, feeds)
 }
