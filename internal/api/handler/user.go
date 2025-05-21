@@ -45,15 +45,12 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		response.WithError(w, 500, fmt.Sprintf("Couldn't create user: %v", err))
 	}
 
-	userWithTags := response.AddJsonTagToUser(user)
-
-	response.WithJson(w, http.StatusCreated, userWithTags)
+	response.WithJson(w, http.StatusCreated, user)
 
 }
 
 func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request, user database.User) {
-	userWithTags := response.AddJsonTagToUser(user)
 
-	response.WithJson(w, http.StatusOK, userWithTags)
+	response.WithJson(w, http.StatusOK, user)
 
 }

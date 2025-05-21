@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
-	"github.com/PedroMartini98/rss_aggregator_go/internal/database"
-	"github.com/PedroMartini98/rss_aggregator_go/internal/model"
 )
 
 func WithJson(w http.ResponseWriter, code int, payload interface{}) {
@@ -34,27 +31,4 @@ func WithError(w http.ResponseWriter, code int, err string) {
 	}
 
 	WithJson(w, code, errResponse{Error: err})
-}
-
-func AddJsonTagToUser(oldUser database.User) model.User {
-
-	return model.User{
-		ID:        oldUser.ID,
-		CreatedAt: oldUser.CreatedAt,
-		UpdatedAt: oldUser.UpdatedAt,
-		Name:      oldUser.Name,
-		ApiKey:    oldUser.ApiKey,
-	}
-
-}
-
-func AddJsonTagToFeed(oldFeed database.Feed) model.Feed {
-	return model.Feed{
-		ID:        oldFeed.ID,
-		CreatedAt: oldFeed.CreatedAt,
-		UpdatedAt: oldFeed.UpdatedAt,
-		Url:       oldFeed.Url,
-		Name:      oldFeed.Name,
-		UserID:    oldFeed.UserID,
-	}
 }
