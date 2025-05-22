@@ -74,29 +74,3 @@ func (h *feedHandler) GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 
 	response.WithJson(w, http.StatusOK, feeds)
 }
-
-func (h *feedHandler) CreateFollow(w http.ResponseWriter, r *http.Request, user database.User) {
-	type params struct {
-		Feed_id uuid.UUID `json:"feed_id"`
-	}
-
-	var p params
-
-	err := json.NewDecoder(r.Body).Decode(&p)
-	if err != nil {
-		response.WithError(w, http.StatusInternalServerError, fmt.Sprintf("unable to parse json: %v", err))
-		return
-	}
-
-	follow, err := h.dbQueries.CreateFollow(r.Context(), database.CreateFollowParams{
-		UserID:    user.ID,
-		CreatedAt: time.Now(),
-		FeedID:    p.Feed_id,
-	})
-
-	if err != nil {
-		response.WithError(w, http.StatusBadRequest, fmt.Sprintf("unable to create follow: %v", err))
-		return
-	}
-	response.WithJson(w, http.StatusCreated, follow)
-}

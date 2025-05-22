@@ -57,6 +57,28 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request, user datab
 
 }
 
+func (h *userHandler) Follow(w http.ResponseWriter, r *http.Request, user database.User) {
+	feedUnvalidated := chi.URLParam(r, "feedID")
+
+	feedValidated, err := uuid.Parse(feedUnvalidated)
+	if err != nil {
+		response.WithError(w, http.StatusBadRequest, fmt.Sprintf("please submit a valid feed id: %v", err))
+		return
+	}
+
+	follow, err := h.dbQueries.CreateFollow(r.Context(), database.CreateFollowParams{
+		UserID:    user.ID,
+		CreatedAt: time.Now(),
+		FeedID:    feedValidated,
+	})
+
+	if err != nil {
+		response.WithError(w, http.StatusBadRequest, fmt.Sprintf("unable to create follow: %v", err))
+		return
+	}
+	response.WithJson(w, http.StatusCreated, follow)
+}
+
 func (h *userHandler) Unfollow(w http.ResponseWriter, r *http.Request, user database.User) {
 
 	feedUnvalidated := chi.URLParam(r, "feedID")

@@ -57,12 +57,12 @@ func main() {
 	// User routes:
 	v1Router.Post("/create_user", userHandler.CreateUser)
 	v1Router.Get("/user", middlewareHandler.Auth(userHandler.GetUser))
+	v1Router.Post("/follow/{feedID}", middlewareHandler.Auth(userHandler.Follow))
 	v1Router.Delete("/unfollow/{feedID}", middlewareHandler.Auth(userHandler.Unfollow))
 
 	//Feed routes:
 	v1Router.Post("/create_feed", middlewareHandler.Auth(feedHandler.CreateFeed))
 	v1Router.Get("/feeds", feedHandler.GetAllFeeds)
-	v1Router.Post("/create_feed_follow", middlewareHandler.Auth(feedHandler.CreateFollow))
 
 	srv := &http.Server{
 		Handler: router,
