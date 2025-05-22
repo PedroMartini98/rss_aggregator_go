@@ -89,7 +89,6 @@ func (h *feedHandler) CreateFollow(w http.ResponseWriter, r *http.Request, user 
 	}
 
 	follow, err := h.dbQueries.CreateFollow(r.Context(), database.CreateFollowParams{
-		ID:        uuid.New(),
 		UserID:    user.ID,
 		CreatedAt: time.Now(),
 		FeedID:    p.Feed_id,

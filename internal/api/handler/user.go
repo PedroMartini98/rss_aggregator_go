@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/PedroMartini98/rss_aggregator_go/internal/database"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/response"
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
@@ -53,4 +55,29 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request, user datab
 
 	response.WithJson(w, http.StatusOK, user)
 
+}
+
+func (h *userHandler) Unfollow(w http.ResponseWriter, r *http.Request, user database.User) {
+
+	feedUnvalidated := chi.URLParam(r, "feedID")
+
+	feedValidated, err := uuid.Parse(feedUnvalidated)
+	if err != nil {
+		response.WithError(w, http.StatusBadRequest, fmt.Sprintf("please submit a valid feedID: %v", err))
+		return
+	}
+
+	_, err = h.dbQueries.DeleteFollow(r.Context(), database.DeleteFollowParams{
+		UserID: user.ID,
+		FeedID: feedValidated,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			response.WithError(w, http.StatusBadRequest, fmt.Sprintf("there is no feed follow from this user in this id"))
+			return
+		}
+		response.WithError(w, http.StatusInternalServerError, fmt.Sprintf("failed to delete follow in the database:%v", err))
+		return
+	}
+	response.WithJson(w, http.StatusOK, "Sucessfully deleted follow")
 }
