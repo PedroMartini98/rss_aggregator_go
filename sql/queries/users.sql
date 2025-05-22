@@ -7,3 +7,7 @@ RETURNING *;
 -- name: GetUserByApiKey :one
 
 SELECT * FROM users WHERE api_key = $1;
+
+-- name: GetUserFollows :many
+
+SELECT * FROM feed_follows WHERE user_id = $1;
