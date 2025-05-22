@@ -23,6 +23,7 @@ type FeedFollow struct {
 	CreatedAt time.Time `json:"created_at"`
 	FeedID    uuid.UUID `json:"feed_id"`
 	UserID    uuid.UUID `json:"user_id"`
+	FeedUrl   string    `json:"feed_url"`
 }
 
 type User struct {

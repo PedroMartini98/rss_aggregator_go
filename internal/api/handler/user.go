@@ -103,3 +103,14 @@ func (h *userHandler) Unfollow(w http.ResponseWriter, r *http.Request, user data
 	}
 	response.WithJson(w, http.StatusOK, "Sucessfully deleted follow")
 }
+
+func (h *userHandler) GetFollows(w http.ResponseWriter, r *http.Request, user database.User) {
+	feeds, err := h.dbQueries.GetUserFollows(r.Context(), user.ID)
+	if err != nil {
+		response.WithError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get user follows: %v", err))
+		return
+	}
+
+	response.WithJson(w, http.StatusAccepted, feeds)
+
+}

@@ -64,7 +64,7 @@ func (q *Queries) GetUserByApiKey(ctx context.Context, apiKey string) (User, err
 
 const getUserFollows = `-- name: GetUserFollows :many
 
-SELECT created_at, feed_id, user_id FROM feed_follows WHERE user_id = $1
+SELECT created_at, feed_id, user_id, feed_url FROM feed_follows WHERE user_id = $1
 `
 
 func (q *Queries) GetUserFollows(ctx context.Context, userID uuid.UUID) ([]FeedFollow, error) {
@@ -76,7 +76,12 @@ func (q *Queries) GetUserFollows(ctx context.Context, userID uuid.UUID) ([]FeedF
 	var items []FeedFollow
 	for rows.Next() {
 		var i FeedFollow
-		if err := rows.Scan(&i.CreatedAt, &i.FeedID, &i.UserID); err != nil {
+		if err := rows.Scan(
+			&i.CreatedAt,
+			&i.FeedID,
+			&i.UserID,
+			&i.FeedUrl,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
