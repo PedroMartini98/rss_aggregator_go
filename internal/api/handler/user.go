@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/PedroMartini98/rss_aggregator_go/internal/database"
@@ -105,6 +106,7 @@ func (h *userHandler) Unfollow(w http.ResponseWriter, r *http.Request, user data
 }
 
 func (h *userHandler) GetFollows(w http.ResponseWriter, r *http.Request, user database.User) {
+
 	feeds, err := h.dbQueries.GetUserFollows(r.Context(), user.ID)
 	if err != nil {
 		response.WithError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get user follows: %v", err))
@@ -113,4 +115,27 @@ func (h *userHandler) GetFollows(w http.ResponseWriter, r *http.Request, user da
 
 	response.WithJson(w, http.StatusAccepted, feeds)
 
+}
+
+func (h *userHandler) GetPosts(w http.ResponseWriter, r *http.Request, user database.User) {
+
+	limitString := chi.URLParam(r, "limit")
+
+	limitNumber := 10
+	var err error
+
+	if limitString != "" {
+		limitNumber, err = strconv.Atoi(limitString)
+		if err != nil || limitNumber <= 0 {
+			response.WithError(w, http.StatusBadRequest, fmt.Sprintf("please enter a valid limit number:%v", err))
+			return
+		}
+
+		posts, err := h.dbQueries.GetPostsForUser(r.Context(), database.GetPostsForUserParams{UserID: user.ID, Limit: int32(limitNumber)})
+		if err != nil {
+			response.WithError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get posts from database: %v", err))
+			return
+		}
+		response.WithJson(w, http.StatusOK, posts)
+	}
 }
