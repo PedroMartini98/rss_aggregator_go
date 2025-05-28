@@ -103,14 +103,14 @@ func (q *Queries) GetFeedById(ctx context.Context, id uuid.UUID) (Feed, error) {
 	return i, err
 }
 
-const getFeedsToFetched = `-- name: GetFeedsToFetched :many
+const getFeedsToFetch = `-- name: GetFeedsToFetch :many
 SELECT id, created_at, updated_at, name, url, user_id, last_fetched FROM feeds
 ORDER BY last_fetched ASC NULLS FIRST
 LIMIT $1
 `
 
-func (q *Queries) GetFeedsToFetched(ctx context.Context, limit int32) ([]Feed, error) {
-	rows, err := q.db.QueryContext(ctx, getFeedsToFetched, limit)
+func (q *Queries) GetFeedsToFetch(ctx context.Context, limit int32) ([]Feed, error) {
+	rows, err := q.db.QueryContext(ctx, getFeedsToFetch, limit)
 	if err != nil {
 		return nil, err
 	}

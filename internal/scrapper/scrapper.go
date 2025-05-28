@@ -1,53 +1,85 @@
 package scrapper
 
 import (
-	"encoding/xml"
-	"io"
-	"net/http"
+	"context"
+	"database/sql"
+	"log"
+	"strings"
+	"sync"
 	"time"
+
+	"github.com/PedroMartini98/rss_aggregator_go/internal/database"
+	"github.com/google/uuid"
 )
 
-type RSSItem struct {
-	Title       string `xml:"title"`
-	Description string `xml:"description"`
-	Link        string `xml:"link"`
-	PubDate     string `xml:"pubDate"`
+func StartScrapping(db *database.Queries, concurrencyLimit int, timeBtwnRequest time.Duration) {
+	log.Printf("Scrapping on %v goroutines every %s durations", concurrencyLimit, timeBtwnRequest)
+	ticker := time.NewTicker(timeBtwnRequest)
+	//intialize the for loop with empty ; ; so it starts imidiatly
+	for ; ; <-ticker.C {
+
+		feeds, err := db.GetFeedsToFetch(context.Background(), int32(concurrencyLimit))
+
+		if err != nil {
+			log.Printf("Error fetching feeds:%v", err)
+			continue
+		}
+
+		wg := &sync.WaitGroup{}
+
+		for _, feed := range feeds {
+			wg.Add(1)
+			go scrapFeed(db, feed, wg)
+		}
+	}
+
 }
 
-type RSSFeed struct {
-	Channel struct {
-		Title       string    `xml:"title"`
-		Link        string    `xml:"link"`
-		Description string    `xml:"description"`
-		Language    string    `xml:"language"`
-		Item        []RSSItem `xml:"item"`
-	} `xml:"channel"`
-}
+func scrapFeed(db *database.Queries, feed database.Feed, wg *sync.WaitGroup) {
 
-func UrlIntoFeed(url string) (RSSFeed, error) {
+	defer wg.Done()
 
-	httpClient := http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	resp, err := httpClient.Get(url)
+	_, err := db.MarkFetched(context.Background(), feed.ID)
 	if err != nil {
-		return RSSFeed{}, err
+		log.Printf("failed to mark feed( %s ) as fetched: %v ", feed.Name, err)
+		return
 	}
 
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
+	rssFeed, err := UrlIntoFeed(feed.Url)
 	if err != nil {
-		return RSSFeed{}, err
+		log.Printf("failed to fecth feed( %s ) : %v ", feed.Name, err)
+		return
 	}
 
-	output := RSSFeed{}
+	for _, item := range rssFeed.Channel.Item {
 
-	err = xml.Unmarshal(data, &output)
-	if err != nil {
-		return RSSFeed{}, err
+		description := sql.NullString{}
+		if item.Description != "" {
+			description.String = item.Description
+			description.Valid = true
+		}
+
+		parsedTime, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			log.Printf("failed to parse date %v with err: %v", item.PubDate, err)
+		}
+
+		_, err = db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			Title:       item.Title,
+			Url:         item.Link,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			PublishedAt: parsedTime,
+			Description: description,
+			FeedID:      feed.ID,
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key") {
+				continue
+			}
+			log.Print("failed to create post:", err)
+		}
 	}
-
-	return output, nil
+	log.Printf("Feed %s collected, %v posts found", feed.Name, len(rssFeed.Channel.Item))
 }

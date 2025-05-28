@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/PedroMartini98/rss_aggregator_go/config"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/api/handler"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/api/middleware"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/database"
 	"github.com/PedroMartini98/rss_aggregator_go/internal/response"
+	"github.com/PedroMartini98/rss_aggregator_go/internal/scrapper"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	_ "github.com/lib/pq"
@@ -29,6 +31,8 @@ func main() {
 	defer db.Close()
 
 	dbQueries := database.New(db)
+
+	go scrapper.StartScrapping(dbQueries, 10, time.Minute)
 
 	router := chi.NewRouter()
 
