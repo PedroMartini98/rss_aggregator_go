@@ -9,7 +9,7 @@ SELECT * FROM feeds;
 -- name: GetFeedById :one
 SELECT * FROM feeds where id = $1;
 
--- name: GetFeedsToFetched :many
+-- name: GetFeedsToFetch :many
 SELECT * FROM feeds
 ORDER BY last_fetched ASC NULLS FIRST
 LIMIT $1;
